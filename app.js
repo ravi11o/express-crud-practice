@@ -1,10 +1,13 @@
 // requires
 var express = require('express');
 var mongoose = require('mongoose');
+var path = require('path');
 // console.log(process.env);
 
-// require User model
-var User = require('./models/User');
+// require routes
+var indexRouter = require('./routes/index');
+var usersRouter = require('./routes/users');
+
 
 var PORT = process.env.PORT || 3000;
 
@@ -22,41 +25,13 @@ var app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
 
 // routes
-app.get('/users', (req, res) => {
-  User.find({},  (err, listUsers) => {
-    if(err) return next(err);
-    res.json({users: listUsers});
-  })
-})
-
-app.get('/users/:id', (req, res, next) => {
-  var userId = req.params.id;
-  User.findById(userId, (err, singleUser) => {
-    res.send(singleUser)
-  })
-})
-
-app.post('/users', (req, res, next) => {
-  User.create(req.body, (err, createdUser) => {
-    if(err) return next(err);
-    res.send(createdUser);
-  })
-})
-
-app.put('/users/:email', (req, res) => {
-  var email = req.params.email;
-  User.findOneAndUpdate({ email }, req.body, {new: true}, (err, updatedUser) => {
-    res.send(updatedUser)
-  })
-})
-
-app.delete('/users/:id', (req, res) => {
-  User.findByIdAndRemove(req.params.id, (err, deletedUser) => {
-    res.send(deletedUser.name + 'has been deleted');
-  })
-})
+app.use('/', indexRouter);
+app.use('/users', usersRouter);
 
 // error handler middleware
 // 404 handler
